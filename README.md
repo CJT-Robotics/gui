@@ -59,12 +59,12 @@ This section is used to generally start our software. Here you will find general
    catkin_make
    ```
    
-2. Now your workspace is up to date, if there were no errors. So now, you could start out software.
+2. Now your workspace is up to date, if there were no errors. After starting roscore you can start our software.
    
     - Driver GUI
   
       ```bash
-      rorrun cjtrobotics_gui driver_gui
+      rosrun cjtrobotics_gui driver_gui
       ```
      
    - Robotic-Arm Operator GUI
@@ -72,3 +72,11 @@ This section is used to generally start our software. Here you will find general
      ```bash
      rosrun cjtrobotics_gui driver_gui
      ```
+     
+3. To stop and shutdown our gui, you just have to close the window of the gui. After this just wait a second, then the threads are closed.
+
+4. If you need any kind of help, there are tree options, to get it.
+   
+    - For the most frequently questions there are some solutions in the gui program.
+    - We are happy, if you report an issue on GitHub. So other people with similar problems could solve there problems as well.
+    - As the last option, you can submit us an email (contact@cjtrobotics.de) with your problem, then we hope, that we could help you.
