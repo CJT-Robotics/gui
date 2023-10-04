@@ -37,6 +37,7 @@ To use this software for your own projects or your robot, we will give you an ex
    ```
    
 4. Run our code. Please note that roscore should be started.
+   
    - Driver GUI
   
      ```bash
@@ -51,4 +52,23 @@ To use this software for your own projects or your robot, we will give you an ex
      
 ## Getting Started
 This section is used to generally start our software. Here you will find general tips.
-1.
+1. Build your catkin workspace. To do so, please ensure, that you are in the right folder (your catkin workspace). Otherwise the build command won't be working.
+
+   ```bash
+   cd <your_workspace_folder_name>/
+   catkin_make
+   ```
+   
+2. Now your workspace is up to date, if there were no errors. So now, you could start out software.
+   
+    - Driver GUI
+  
+      ```bash
+      rorrun cjtrobotics_gui driver_gui
+      ```
+     
+   - Robotic-Arm Operator GUI
+   
+     ```bash
+     rosrun cjtrobotics_gui driver_gui
+     ```
