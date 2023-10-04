@@ -70,7 +70,7 @@ This section is used to generally start our software. Here you will find general
    - Robotic-Arm Operator GUI
    
      ```bash
-     rosrun cjtrobotics_gui driver_gui
+     rosrun cjtrobotics_gui operator_gui
      ```
      
 3. To stop and shutdown our gui, you just have to close the window of the gui. After this just wait a second, then the threads are closed.
