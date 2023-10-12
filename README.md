@@ -1,13 +1,13 @@
 # CJT-Robotics GUI-Software
 
-> [![Version - BETA](https://img.shields.io/badge/Version-BETA-ffff00)](https://) [![Customizable - Semi (in progress)](https://img.shields.io/badge/Customizable-Semi_(in_progress)-ffa500)](https://) [![Other Software - required](https://img.shields.io/badge/Other_Software-required-FF0000)](https://)
+[![Version - BETA](https://img.shields.io/badge/Version-BETA-ffff00)](https://) [![Customizable - Semi (in progress)](https://img.shields.io/badge/Customizable-Semi_(in_progress)-ffa500)](https://) [![Other Software - required](https://img.shields.io/badge/Other_Software-required-FF0000)](https://)
 
 ## Overview
 * [Installation](#installation)
 * [Getting Started](#getting-started)
-* [Documetation]()
-    - [Usfull Information]()
-    - [Required Software]()
+* [Documetation](#documentation)
+    - [Usfull Information](#usfull-information)
+    - [Required Software](#required-software)
     - [Good to Know]()
     - [Wiki]()
 * [Issue Reporting]()
@@ -28,15 +28,17 @@ To use this software for your own projects or your robot, we will give you an ex
     ```bash
     git clone https://github.com/CJT-Robotics/gui.git
     ```
+
+3. Make sure that the required third-party software is installed. You can find the list here: [Required Software](#required-software)
     
-3. Navigate to your workspace folder and build your it, to use our software.
+4. Navigate to your workspace folder and build your it, to use our software.
 
    ```bash
    cd ..
    catkin_make
    ```
    
-4. Run our code. Please note that roscore should be started.
+5. Run our code. Please note that roscore should be started.
    
    - Driver GUI
   
@@ -77,6 +79,28 @@ This section is used to generally start our software. Here you will find general
 
 4. If you need any kind of help, there are tree options, to get it.
    
-    - For the most frequently questions there are some solutions in the gui program.
-    - We are happy, if you report an issue on GitHub. So other people with similar problems could solve there problems as well.
+    - For the most frequently asked questions there are some solutions in the gui program.
+    - We are happy, if you report an issue on GitHub. So other people with similar problems could solve there problems as well. Please use the recommend format you can find here [Issue Reporting]()
     - As the last option, you can submit us an email (contact@cjtrobotics.de) with your problem, then we hope, that we could help you.
+
+## Documentation
+
+Here you can find some information about the program it self. For example the required information, some other usfull information or the link to the wiki for a detailed documantation.
+
+### Usfull Information
+
+* This software is currently a BETA-Version.
+* This GUI Software does not require any pre manipulated images. We have built some preset filters and viewing options. For example movement detection in different approaches, line for the postion of the wheels, detection of hazment signs, detection of landolt C and even more.
+* This GUI Software also includs an emulator for your key inputs. So you can subscribe in your ros-network this inputs for maneuver your robot.
+* This software can display multible cameras.
+* This software displays you information of the robot if the robot provides this information.
+* This programm can also display a temporary LIDAR image.
+* If you dont use all this technologies or dont want to display them in your GUI, you can also disable this features or dont connect them. If the source is not availible, you can also use this program.
+
+### Required Software
+
+* Due to the use of the ImGui library this software is rquired. But if you download this package the imgui folder should be included as well.
+* You have installed the roscpp package. If you havent, you get directions if you start the programm.
+* You have installed the image_transport package. If you havent, you get directions if you start the programm.
+* You have installed the sensor_msgs package. If you havent, you get directions if you start the programm.
+* You have installed the cv_bridge package. If you havent, you get directions if you start the programm.
