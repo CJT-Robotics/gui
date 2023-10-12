@@ -1,5 +1,7 @@
 # CJT-Robotics GUI-Software
 
+[![GitHub Package - under construction](https://img.shields.io/badge/GitHub_Package-under_construction-ff0000?style=for-the-badge&logo=!&logoColor=fff)](https://)
+
 [![Version - BETA](https://img.shields.io/badge/Version-BETA-ffff00)](https://) [![Customizable - Semi (in progress)](https://img.shields.io/badge/Customizable-Semi_(in_progress)-ffa500)](https://) [![Other Software - required](https://img.shields.io/badge/Other_Software-required-FF0000)](https://)
 
 ## Overview
