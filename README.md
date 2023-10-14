@@ -11,8 +11,8 @@
     - [Usfull Information](#usfull-information)
     - [Required Software](#required-software)
     - [Good to Know](#good-to-know)
-    - [Wiki]()
-* [Issue Reporting]()
+    - [Wiki](#wiki)
+* [Issue Reporting](#issue-reporting)
 * [Credits]()
 * [License]()
 
@@ -111,3 +111,25 @@ Here you can find some information about the program it self. For example the re
 
 * This program is still under development. So this means, that this program isnt finished developed at all.
 * If the package folder is not named "cjtrobotics_gui", the software will crash. In later fixes we will solve this error.
+
+### Wiki
+
+We use the wiki for an exact documentation of this program. We explain the code in all details and we hope that if you have any problems with customizing our software or questions to the code, that this helps you. Here is the link to our wiki: [Wiki](https://github.com/CJT-Robotics/gui/wiki)
+
+## Issue Reporting
+
+> To make our lives easier and to maintain a clear structure, we request that the issue report follows a predefined structure.
+
+Title:
+
+* [Label] - "The topic of the report"
+
+Content:
+
+* [Date of the report] - Version: "Version of the Prgramm" Could be find under package.xml
+* Describe your issue
+* (If you send any files, name them as the topic of the file) Contentdescription - Link
+
+Please also add your label at the labels section.
+
+> Here you can find a test issue with this format: [Issue](https://github.com/CJT-Robotics/gui/issues/4)
