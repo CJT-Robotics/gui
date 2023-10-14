@@ -10,7 +10,7 @@
 * [Documetation](#documentation)
     - [Usfull Information](#usfull-information)
     - [Required Software](#required-software)
-    - [Good to Know]()
+    - [Good to Know](#good-to-know)
     - [Wiki]()
 * [Issue Reporting]()
 * [Credits]()
@@ -106,3 +106,8 @@ Here you can find some information about the program it self. For example the re
 * You have installed the image_transport package. If you havent, you get directions if you start the programm.
 * You have installed the sensor_msgs package. If you havent, you get directions if you start the programm.
 * You have installed the cv_bridge package. If you havent, you get directions if you start the programm.
+
+### Good to Know
+
+* This program is still under development. So this means, that this program isnt finished developed at all.
+* If the package folder is not named "cjtrobotics_gui", the software will crash. In later fixes we will solve this error.
