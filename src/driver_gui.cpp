@@ -557,7 +557,7 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
     }
 
     //draws the distance angle
-    /* if(lidar_distnce_angle_staus)   {
+    if(lidar_distnce_angle_staus)   {
         //calculates the distance angle
         int angleStartIndex = (int)((minAngle + lidar_distance_angle_fov) / angleInc);
         int angleEndIndex = (int)(angleStartIndex + lidar_distance_angle_fov / angleInc);
@@ -586,11 +586,13 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
         }
 
 
-        mutex.lock();
-        //draws the distance angle
-        //line to start of angle
-        cv::line(lidarImage, image_mid, )
-    }*/
+
+        // mutex.lock();
+        // //draws the distance angle
+        // //line to start of angle
+        // cv::line(lidarImage, image_mid, )
+    }
+
 
     //draws the rectangle that represents the robots size
     int x_pos_rect = (int)(lidar_image_size_x/2 - ((lidarX / 100) * disc_factor));
