@@ -482,18 +482,16 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
                 float dist = cv::norm(old_pos - new_pos);
 
                 if (dist < 15){
-                    mutex.lock();
+                    //mutex.lock();
                     cv::line(lidarImage, old_pos, new_pos, cv::Scalar(0, 0, 0), 1);
-                    mutex.unlock();
+                    //mutex.unlock();
                 }
             }
 
-            if (pix_x > lidar_image_size_x || pix_y > lidar_image_size_y)
-                ;
-            else if (pix_x < lidar_image_size_x && pix_y < lidar_image_size_y) {
-                mutex.lock();
+            if (pix_x < lidar_image_size_x && pix_y < lidar_image_size_y && pix_x > 0 && pix_y > 0) {
+                //mutex.lock();
                 lidarImage.at<cv::Vec3b>(cv::Point(pix_x, pix_y)) = cv::Vec3b(0, 0, 0);
-                mutex.unlock();
+                //mutex.unlock();
             }
         }
     }
@@ -543,7 +541,7 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
             pixCount = 0;
         }
 
-        mutex.lock();
+        //mutex.lock();
         //draws the distanceLines
         for(int i = 0; i < endDistanceLine.size(); i++)   {
             std::stringstream ss;
@@ -553,7 +551,7 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
             cv::line(lidarImage,cv::Point((int)(lidar_image_size_x / 2),(int)(lidar_image_size_y / 2)),endDistanceLine[i], cv::Scalar(0, 0, 0),1);  
             cv::putText(lidarImage,objectDistance,cv::Point(endDistanceLine[i]),cv::FONT_HERSHEY_DUPLEX,0.5,cv::Scalar(0,0,0),1,true);
         }
-        mutex.unlock();
+        //mutex.unlock();
     }
 
     //draws the distance angle
@@ -587,11 +585,32 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
 
 
 
-        // mutex.lock();
-        // //draws the distance angle
-        // //line to start of angle
-        // cv::line(lidarImage, image_mid, )
-    }
+        //mutex.lock();
+        //draws the distance angle
+
+        cv::point lineStart = cv::Point((int)(lidar_image_size_x/2 - xy_scan[angleStartIndex][1] * disc_factor),(int)(lidar_image_size_y/2 - xy_scan[angleStartIndex][0] * disc_factor))
+        cv::point lineEnd = cv::Point((int)(lidar_image_size_x/2 - xy_scan[angleEndIndex][1] * disc_factor),(int)(lidar_image_size_y/2 - xy_scan[angleEndIndex][0] * disc_factor))
+        
+        cv::line(lidarImage, image_mid, lineStart, cv::Scalar(0, 0, 0),1);  //line to start of angle
+        cv::line(lidarImage, image_mid, lineEnd, cv::Scalar(0, 0, 0),1);    //line to end og angle
+
+        //draws values in the distane Angle
+        for(int i = angleStartIndex; i < angleEndIndex; i += 20)    {
+            int angle_pix_x = (int)(lidar_image_size_x/2 - xy_scan[i][1] * disc_factor);
+            int angle_pix_y = (int)(lidar_image_size_y/2 - xy_scan[i][0] * disc_factor);
+
+            std::stringstream ss2;
+            ss << std::fixed << std::setprecision(2) << ranges[i];
+            std::string objectDistance2 = ss2.str();
+
+            if(angle_pix_x != lidar_image_size_x || angle_pix_y != lidar_image_size_y)
+                cv::putText(lidarImage, objectDistance, cv::point(angle_pix_x, angle_pix_y), cv::FONT_HERSHEY_DUPLEX,0.5,cv::Scalar(0,0,0),1,true);
+
+        }
+
+        //mutex.unlock();
+        
+        }
 
 
     //draws the rectangle that represents the robots size
@@ -600,7 +619,7 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
     int rect_width = (int)((lidar_robotWidth/100)*disc_factor);
     int rect_height = (int)((lidar_robotLength/100) * disc_factor);
 
-    mutex.lock();
+    //mutex.lock();
     for(int x = x_pos_rect; x < x_pos_rect + rect_width; x++)
     for(int y = y_pos_rect; y < y_pos_rect + rect_height; y++){
         lidarImage.at<cv::Vec3b>(cv::Point(x,y)) = cv::Vec3b(120,120,120);
@@ -610,7 +629,7 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
     for(int y = (int)(lidar_image_size_y/2 - 2); y < lidar_image_size_y/2+2; y++){
         lidarImage.at<cv::Vec3b>(cv::Point(x,y)) = cv::Vec3b(255,100,0);
     }
-    mutex.unlock();
+    //mutex.unlock();
 
     if(lidar_distance_line_status || lidar_distnce_angle_staus)
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -752,10 +771,10 @@ void infillTopRightWindow()
 }
 void infillBottomLeftWindow()
 {
-    mutex.lock();
+    //mutex.lock();
     cv::Mat lidarImageCopy;
     lidarImage.copyTo(lidarImageCopy);
-    mutex.unlock();
+    //mutex.unlock();
 
     glGenTextures(1, &textureLidar);
     glBindTexture(GL_TEXTURE_2D, textureLidar);
