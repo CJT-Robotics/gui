@@ -64,10 +64,15 @@ std::string qr_text;
 bool displayRostopics = false;
 int numTopics;
 
-cv::Mat frameCameraTop;
-cv::Mat oldFrameCameraTop;
-bool isFrameCameraTop;
-GLuint textureCameraTop;
+cv::Mat frameCameraFront;
+cv::Mat oldFrameCameraFront;
+bool isFrameCameraFront;
+GLuint textureCameraFront;
+
+cv::Mat frameCameraBack;
+cv::Mat oldFrameCameraBack;
+bool isFrameCameraBack;
+GLuint textureCameraBack;
 
 GLuint my_image_texture_plusButton = 0;
 GLuint my_image_texture_minusButton = 0;
@@ -398,32 +403,61 @@ void getRostopics()
 
 // }
 
-void getTopCamera(const sensor_msgs::ImageConstPtr &msg)
+void getFrontCamera(const sensor_msgs::ImageConstPtr &msg)
 {
 
     try
     {
 
-        frameCameraTop = cv_bridge::toCvShare(msg, "bgr8")->image;
-        cv::cvtColor(frameCameraTop, frameCameraTop, cv::COLOR_BGR2RGBA);
+        frameCameraFront = cv_bridge::toCvShare(msg, "bgr8")->image;
+        cv::cvtColor(frameCameraFront, frameCameraFront, cv::COLOR_BGR2RGBA);
 
-        cv::Point2f center(frameCameraTop.cols / 2, frameCameraTop.rows / 2);
+        cv::Point2f center(frameCameraFront.cols / 2, frameCameraFront.rows / 2);
         double angle = 180.0;
         double scale = 0.8;
 
         cv::Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, scale);
 
         cv::Mat rotatedMat;
-        cv::warpAffine(frameCameraTop, rotatedMat, rotationMatrix, frameCameraTop.size());
+        cv::warpAffine(frameCameraFront, rotatedMat, rotationMatrix, frameCameraFront.size());
 
-        frameCameraTop = rotatedMat;
-        oldFrameCameraTop = frameCameraTop;
+        frameCameraFront = rotatedMat;
+        oldFrameCameraFront = frameCameraFront;
 
-        isFrameCameraTop = true;
+        isFrameCameraFront = true;
     }
     catch (cv_bridge::Exception &e)
     {
-        isFrameCameraTop = false;
+        isFrameCameraFront = false;
+    }
+}
+
+void getBackCamera(const sensor_msgs::ImageConstPtr &msg)
+{
+
+    try
+    {
+
+        frameCameraBack = cv_bridge::toCvShare(msg, "bgr8")->image;
+        cv::cvtColor(frameCameraBack, frameCameraBack, cv::COLOR_BGR2RGBA);
+
+        cv::Point2f center(frameCameraBack.cols / 2, frameCameraBack.rows / 2);
+        double angle = 0.0;
+        double scale = 0.8;
+
+        cv::Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, scale);
+
+        cv::Mat rotatedMat;
+        cv::warpAffine(frameCameraBack, rotatedMat, rotationMatrix, frameCameraBack.size());
+
+        frameCameraBack = rotatedMat;
+        oldFrameCameraBack = frameCameraBack;
+
+        isFrameCameraBack = true;
+    }
+    catch (cv_bridge::Exception &e)
+    {
+        isFrameCameraBack = false;
     }
 }
 
@@ -431,131 +465,133 @@ void displayTopCamera(const sensor_msgs::ImageConstPtr &msg)
 {
 }
 
-void laserCallback(const sensor_msgs::LaserScan &msg)
-{
-    float maxAngle = msg.angle_max;
-    float minAngle = msg.angle_min;
-    float angleInc = msg.angle_increment;
-    float maxLength = msg.range_max;
+// void laserCallback(const sensor_msgs::LaserScan &msg)
+// {
+//     float maxAngle = msg.angle_max;
+//     float minAngle = msg.angle_min;
+//     float angleInc = msg.angle_increment;
+//     float maxLength = msg.range_max;
 
-    float angle;
+//     float angle;
 
-    lidarImage = cv::Mat(lidar_image_size_y, lidar_image_size_x, CV_8UC3, cv::Scalar(255, 255, 255));
-    std::vector<float> ranges = msg.ranges;
-    int num_pts = ranges.size();
+//     lidarImage = cv::Mat(lidar_image_size_y, lidar_image_size_x, CV_8UC3, cv::Scalar(255, 255, 255));
+//     std::vector<float> ranges = msg.ranges;
+//     int num_pts = ranges.size();
 
-    cv::Point image_mid = cv::Point(lidar_image_size_x / 2, lidar_image_size_y / 2);
+//     cv::Point image_mid = cv::Point(lidar_image_size_x / 2, lidar_image_size_y / 2);
 
-    float xy_scan[num_pts][2] = {};
+//     float xy_scan[num_pts][2] = {};
 
-    for (int i = 0; i < num_pts; i++)
-    {
-        if (ranges[i] > 10 || ranges[i] == NULL)
-            ;
-        else
-        {
-            // calculates the angle of the point and the x and y position
-            angle = minAngle + i * angleInc;
-            xy_scan[i][0] = ranges[i] * cos(angle);
-            xy_scan[i][1] = ranges[i] * sin(angle);
-        }
-    }
+//     for (int i = 0; i < num_pts; i++)
+//     {
+//         if (ranges[i] > 10 || ranges[i] == NULL)
+//             ;
+//         else
+//         {
+//             // calculates the angle of the point and the x and y position
+//             angle = minAngle + i * angleInc;
+//             xy_scan[i][0] = ranges[i] * cos(angle);
+//             xy_scan[i][1] = ranges[i] * sin(angle);
+//         }
+//     }
 
-    for (int i = 0; i < num_pts; i++)
-    {
-        float pt_x = xy_scan[i][1];
-        float pt_y = xy_scan[i][0];
+//     for (int i = 0; i < num_pts; i++)
+//     {
+//         float pt_x = xy_scan[i][1];
+//         float pt_y = xy_scan[i][0];
 
-        if (pt_x < max_lidar_range || pt_x > -1 * (max_lidar_range - disc_size) || pt_y < max_lidar_range || pt_y > -1 * (max_lidar_range - disc_size))
-        {
-            int pix_x = (int)(lidar_image_size_x / 2 - pt_x * disc_factor);
-            int pix_y = (int)(lidar_image_size_y / 2 - pt_y * disc_factor);
+//         if (pt_x < max_lidar_range || pt_x > -1 * (max_lidar_range - disc_size) || pt_y < max_lidar_range || pt_y > -1 * (max_lidar_range - disc_size))
+//         {
+//             int pix_x = (int)(lidar_image_size_x / 2 - pt_x * disc_factor);
+//             int pix_y = (int)(lidar_image_size_y / 2 - pt_y * disc_factor);
 
-            if (i < (num_pts - 1) && lidar_connection_line_staus)
-            { // connects two points with a line
-                int pix_x_new = (int)(lidar_image_size_x / 2 - xy_scan[i + 1][1] * disc_factor);
-                int pix_y_new = (int)(lidar_image_size_y / 2 - xy_scan[i + 1][0] * disc_factor);
+//             if (i < (num_pts - 1) && lidar_connection_line_staus)
+//             { // connects two points with a line
+//                 int pix_x_new = (int)(lidar_image_size_x / 2 - xy_scan[i + 1][1] * disc_factor);
+//                 int pix_y_new = (int)(lidar_image_size_y / 2 - xy_scan[i + 1][0] * disc_factor);
 
-                cv::Point old_pos = cv::Point(pix_x, pix_y);
-                cv::Point new_pos = cv::Point(pix_x_new, pix_y_new);
+//                 cv::Point old_pos = cv::Point(pix_x, pix_y);
+//                 cv::Point new_pos = cv::Point(pix_x_new, pix_y_new);
 
-                float dist = cv::norm(old_pos - new_pos);
+//                 float dist = cv::norm(old_pos - new_pos);
 
-                if (dist < 15){
-                    //mutex.lock();
-                    cv::line(lidarImage, old_pos, new_pos, cv::Scalar(0, 0, 0), 1);
-                    //mutex.unlock();
-                }
-            }
+//                 if (dist < 15){
+//                     mutex.lock();
+//                     cv::line(lidarImage, old_pos, new_pos, cv::Scalar(0, 0, 0), 1);
+//                     mutex.unlock();
+//                 }
+//             }
 
-            if (pix_x < lidar_image_size_x && pix_y < lidar_image_size_y && pix_x > 0 && pix_y > 0) {
-                //mutex.lock();
-                lidarImage.at<cv::Vec3b>(cv::Point(pix_x, pix_y)) = cv::Vec3b(0, 0, 0);
-                //mutex.unlock();
-            }
-        }
-    }
+//             if (pix_x > lidar_image_size_x || pix_y > lidar_image_size_y)
+//                 ;
+//             else if (pix_x < lidar_image_size_x && pix_y < lidar_image_size_y) {
+//                 mutex.lock();
+//                 lidarImage.at<cv::Vec3b>(cv::Point(pix_x, pix_y)) = cv::Vec3b(0, 0, 0);
+//                 mutex.unlock();
+//             }
+//         }
+//     }
 
-    int pixCount = 0;
-    float prerange = 0.f;
-    int startIndex = 0;
-    std::vector<cv::Point> endDistanceLine = std::vector<cv::Point>(0);
-    std::vector<int> distanceIndex = std::vector<int>(0);
-    int objectCount = 0;
-    int distance_line_i;
+//     int pixCount = 0;
+//     float prerange = 0.f;
+//     int startIndex = 0;
+//     std::vector<cv::Point> endDistanceLine = std::vector<cv::Point>(0);
+//     std::vector<int> distanceIndex = std::vector<int>(0);
+//     int objectCount = 0;
+//     int distance_line_i;
 
-    //draws the distance lines
-    if(lidar_distance_line_status)  {
-        //calculates the distance lines
-        for(distance_line_i = 0; distance_line_i < num_pts; distance_line_i++)    {
-            if(abs(prerange - ranges[distance_line_i]) < 0.15 && ranges[distance_line_i] < 10)  {
-                pixCount ++;
-            } else if(abs(prerange - ranges[distance_line_i]) > 0.15 && pixCount > 50) {
-                objectCount ++;
-                int middleIndex = (int)(startIndex + 0.5 * abs(startIndex - (distance_line_i-1)));
+//     //draws the distance lines
+//     if(lidar_distance_line_status)  {
+//         //calculates the distance lines
+//         for(distance_line_i = 0; distance_line_i < num_pts; distance_line_i++)    {
+//             if(abs(prerange - ranges[distance_line_i]) < 0.15 && ranges[distance_line_i] < 10)  {
+//                 pixCount ++;
+//             } else if(abs(prerange - ranges[distance_line_i]) > 0.15 && pixCount > 50) {
+//                 objectCount ++;
+//                 int middleIndex = (int)(startIndex + 0.5 * abs(startIndex - (distance_line_i-1)));
 
-                int pt_x_mid = (int)(lidar_image_size_x/2 - xy_scan[middleIndex][1] * disc_factor);
-                int pt_y_mid = (int)(lidar_image_size_y/2 - xy_scan[middleIndex][0] * disc_factor);
+//                 int pt_x_mid = (int)(lidar_image_size_x/2 - xy_scan[middleIndex][1] * disc_factor);
+//                 int pt_y_mid = (int)(lidar_image_size_y/2 - xy_scan[middleIndex][0] * disc_factor);
 
-                endDistanceLine.insert(endDistanceLine.end(),cv::Point(pt_x_mid,pt_y_mid));
+//                 endDistanceLine.insert(endDistanceLine.end(),cv::Point(pt_x_mid,pt_y_mid));
 
-                distanceIndex.insert(distanceIndex.end(),middleIndex);
-                pixCount = 0;
-            }
+//                 distanceIndex.insert(distanceIndex.end(),middleIndex);
+//                 pixCount = 0;
+//             }
 
-            if(abs(prerange - ranges[distance_line_i]) > 0.15 && ranges[distance_line_i] < 10)
-                startIndex = distance_line_i;
+//             if(abs(prerange - ranges[distance_line_i]) > 0.15 && ranges[distance_line_i] < 10)
+//                 startIndex = distance_line_i;
 
-            prerange = ranges[distance_line_i];
-        }
-        if(ranges[num_pts-1] < 10)  {
-            objectCount ++;
-            int middleIndex = (int)(startIndex + 0.5 * abs(startIndex - (distance_line_i-1)));
+//             prerange = ranges[distance_line_i];
+//         }
+//         if(ranges[num_pts-1] < 10)  {
+//             objectCount ++;
+//             int middleIndex = (int)(startIndex + 0.5 * abs(startIndex - (distance_line_i-1)));
 
-            int pt_x_mid = (int)(lidar_image_size_x/2 - xy_scan[middleIndex][1] * disc_factor);
-            int pt_y_mid = (int)(lidar_image_size_y/2 - xy_scan[middleIndex][0] * disc_factor);
+//             int pt_x_mid = (int)(lidar_image_size_x/2 - xy_scan[middleIndex][1] * disc_factor);
+//             int pt_y_mid = (int)(lidar_image_size_y/2 - xy_scan[middleIndex][0] * disc_factor);
 
-            endDistanceLine.insert(endDistanceLine.end(),cv::Point(pt_x_mid,pt_y_mid));
+//             endDistanceLine.insert(endDistanceLine.end(),cv::Point(pt_x_mid,pt_y_mid));
 
-            distanceIndex.insert(distanceIndex.end(),middleIndex);
-            pixCount = 0;
-        }
+//             distanceIndex.insert(distanceIndex.end(),middleIndex);
+//             pixCount = 0;
+//         }
 
-        //mutex.lock();
-        //draws the distanceLines
-        for(int i = 0; i < endDistanceLine.size(); i++)   {
-            std::stringstream ss;
-            ss << std::fixed << std::setprecision(2) << ranges[distanceIndex[i]];
-            std::string objectDistance = ss.str();
+//         mutex.lock();
+//         //draws the distanceLines
+//         for(int i = 0; i < endDistanceLine.size(); i++)   {
+//             std::stringstream ss;
+//             ss << std::fixed << std::setprecision(2) << ranges[distanceIndex[i]];
+//             std::string objectDistance = ss.str();
 
-            cv::line(lidarImage,cv::Point((int)(lidar_image_size_x / 2),(int)(lidar_image_size_y / 2)),endDistanceLine[i], cv::Scalar(0, 0, 0),1);  
-            cv::putText(lidarImage,objectDistance,cv::Point(endDistanceLine[i]),cv::FONT_HERSHEY_DUPLEX,0.5,cv::Scalar(0,0,0),1,true);
-        }
-        //mutex.unlock();
-    }
+//             cv::line(lidarImage,cv::Point((int)(lidar_image_size_x / 2),(int)(lidar_image_size_y / 2)),endDistanceLine[i], cv::Scalar(0, 0, 0),1);  
+//             cv::putText(lidarImage,objectDistance,cv::Point(endDistanceLine[i]),cv::FONT_HERSHEY_DUPLEX,0.5,cv::Scalar(0,0,0),1,true);
+//         }
+//         mutex.unlock();
+//     }
 
     //draws the distance angle
-    if(lidar_distnce_angle_staus)   {
+    /* if(lidar_distnce_angle_staus)   {
         //calculates the distance angle
         int angleStartIndex = (int)((minAngle + lidar_distance_angle_fov) / angleInc);
         int angleEndIndex = (int)(angleStartIndex + lidar_distance_angle_fov / angleInc);
@@ -584,56 +620,33 @@ void laserCallback(const sensor_msgs::LaserScan &msg)
         }
 
 
-
-        //mutex.lock();
+        mutex.lock();
         //draws the distance angle
+        //line to start of angle
+        cv::line(lidarImage, image_mid, )
+    }*/
 
-        cv::point lineStart = cv::Point((int)(lidar_image_size_x/2 - xy_scan[angleStartIndex][1] * disc_factor),(int)(lidar_image_size_y/2 - xy_scan[angleStartIndex][0] * disc_factor))
-        cv::point lineEnd = cv::Point((int)(lidar_image_size_x/2 - xy_scan[angleEndIndex][1] * disc_factor),(int)(lidar_image_size_y/2 - xy_scan[angleEndIndex][0] * disc_factor))
-        
-        cv::line(lidarImage, image_mid, lineStart, cv::Scalar(0, 0, 0),1);  //line to start of angle
-        cv::line(lidarImage, image_mid, lineEnd, cv::Scalar(0, 0, 0),1);    //line to end og angle
+//     //draws the rectangle that represents the robots size
+//     int x_pos_rect = (int)(lidar_image_size_x/2 - ((lidarX / 100) * disc_factor));
+//     int y_pos_rect = (int)(lidar_image_size_y/2 - ((lidarY / 100) * disc_factor));
+//     int rect_width = (int)((lidar_robotWidth/100)*disc_factor);
+//     int rect_height = (int)((lidar_robotLength/100) * disc_factor);
 
-        //draws values in the distane Angle
-        for(int i = angleStartIndex; i < angleEndIndex; i += 20)    {
-            int angle_pix_x = (int)(lidar_image_size_x/2 - xy_scan[i][1] * disc_factor);
-            int angle_pix_y = (int)(lidar_image_size_y/2 - xy_scan[i][0] * disc_factor);
+//     mutex.lock();
+//     for(int x = x_pos_rect; x < x_pos_rect + rect_width; x++)
+//     for(int y = y_pos_rect; y < y_pos_rect + rect_height; y++){
+//         lidarImage.at<cv::Vec3b>(cv::Point(x,y)) = cv::Vec3b(120,120,120);
+//         }
 
-            std::stringstream ss2;
-            ss << std::fixed << std::setprecision(2) << ranges[i];
-            std::string objectDistance2 = ss2.str();
+//     for(int x = (int)(lidar_image_size_x/2 - 2); x < lidar_image_size_x/2+2; x++)
+//     for(int y = (int)(lidar_image_size_y/2 - 2); y < lidar_image_size_y/2+2; y++){
+//         lidarImage.at<cv::Vec3b>(cv::Point(x,y)) = cv::Vec3b(255,100,0);
+//     }
+//     mutex.unlock();
 
-            if(angle_pix_x != lidar_image_size_x || angle_pix_y != lidar_image_size_y)
-                cv::putText(lidarImage, objectDistance, cv::point(angle_pix_x, angle_pix_y), cv::FONT_HERSHEY_DUPLEX,0.5,cv::Scalar(0,0,0),1,true);
-
-        }
-
-        //mutex.unlock();
-        
-        }
-
-
-    //draws the rectangle that represents the robots size
-    int x_pos_rect = (int)(lidar_image_size_x/2 - ((lidarX / 100) * disc_factor));
-    int y_pos_rect = (int)(lidar_image_size_y/2 - ((lidarY / 100) * disc_factor));
-    int rect_width = (int)((lidar_robotWidth/100)*disc_factor);
-    int rect_height = (int)((lidar_robotLength/100) * disc_factor);
-
-    //mutex.lock();
-    for(int x = x_pos_rect; x < x_pos_rect + rect_width; x++)
-    for(int y = y_pos_rect; y < y_pos_rect + rect_height; y++){
-        lidarImage.at<cv::Vec3b>(cv::Point(x,y)) = cv::Vec3b(120,120,120);
-        }
-
-    for(int x = (int)(lidar_image_size_x/2 - 2); x < lidar_image_size_x/2+2; x++)
-    for(int y = (int)(lidar_image_size_y/2 - 2); y < lidar_image_size_y/2+2; y++){
-        lidarImage.at<cv::Vec3b>(cv::Point(x,y)) = cv::Vec3b(255,100,0);
-    }
-    //mutex.unlock();
-
-    if(lidar_distance_line_status || lidar_distnce_angle_staus)
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
-}
+//     if(lidar_distance_line_status || lidar_distnce_angle_staus)
+//         std::this_thread::sleep_for(std::chrono::milliseconds(500));
+// }
 
 void setMainMenuBar()
 {
@@ -754,6 +767,27 @@ void setMainMenuBar()
 void infillTopLeftWindow()
 {
 
+    glGenTextures(1, &textureCameraFront);
+    glBindTexture(GL_TEXTURE_2D, textureCameraFront);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+    if (isFrameCameraFront)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frameCameraFront.cols, frameCameraFront.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, frameCameraFront.data);
+        ImGui::SetCursorPos(ImVec2(0.f, 0.f));
+        ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraFront)), ImVec2(frameCameraFront.cols, frameCameraFront.rows));
+
+        isFrameCameraFront = false;
+    }
+    else
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, oldFrameCameraFront.cols, oldFrameCameraFront.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, oldFrameCameraFront.data);
+        ImGui::SetCursorPos(ImVec2(0.f, 0.f));
+        ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraFront)), ImVec2(oldFrameCameraFront.cols, oldFrameCameraFront.rows));
+    }
+
     float windowSizeX = ImGui::GetWindowSize().x;
     float windowSizeY = ImGui::GetWindowSize().y;
 
@@ -763,6 +797,27 @@ void infillTopLeftWindow()
 void infillTopRightWindow()
 {
 
+    glGenTextures(1, &textureCameraBack);
+    glBindTexture(GL_TEXTURE_2D, textureCameraBack);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+    if (isFrameCameraBack)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frameCameraBack.cols, frameCameraBack.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, frameCameraBack.data);
+        ImGui::SetCursorPos(ImVec2(-60.f, -60.f));
+        ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraBack)), ImVec2(frameCameraBack.cols, frameCameraBack.rows));
+
+        isFrameCameraBack = false;
+    }
+    else
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, oldFrameCameraBack.cols, oldFrameCameraBack.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, oldFrameCameraBack.data);
+        ImGui::SetCursorPos(ImVec2(-60.f, -60.f));
+        ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraBack)), ImVec2(oldFrameCameraBack.cols, oldFrameCameraBack.rows));
+    }
+
     float windowSizeX = ImGui::GetWindowSize().x;
     float windowSizeY = ImGui::GetWindowSize().y;
 
@@ -771,10 +826,10 @@ void infillTopRightWindow()
 }
 void infillBottomLeftWindow()
 {
-    //mutex.lock();
+    mutex.lock();
     cv::Mat lidarImageCopy;
     lidarImage.copyTo(lidarImageCopy);
-    //mutex.unlock();
+    mutex.unlock();
 
     glGenTextures(1, &textureLidar);
     glBindTexture(GL_TEXTURE_2D, textureLidar);
@@ -818,26 +873,26 @@ void infillBottomLeftWindow()
 void infillBottomMiddleWindow()
 {
 
-    glGenTextures(1, &textureCameraTop);
-    glBindTexture(GL_TEXTURE_2D, textureCameraTop);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    // glGenTextures(1, &textureCameraFront);
+    // glBindTexture(GL_TEXTURE_2D, textureCameraFront);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
-    if (isFrameCameraTop)
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frameCameraTop.cols, frameCameraTop.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, frameCameraTop.data);
-        ImGui::SetCursorPos(ImVec2(-60.f, -60.f));
-        ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraTop)), ImVec2(frameCameraTop.cols, frameCameraTop.rows));
+    // if (isFrameCameraFront)
+    // {
+    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frameCameraFront.cols, frameCameraFront.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, frameCameraFront.data);
+    //     ImGui::SetCursorPos(ImVec2(-60.f, -60.f));
+    //     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraFront)), ImVec2(frameCameraFront.cols, frameCameraFront.rows));
 
-        isFrameCameraTop = false;
-    }
-    else
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, oldFrameCameraTop.cols, oldFrameCameraTop.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, oldFrameCameraTop.data);
-        ImGui::SetCursorPos(ImVec2(-60.f, -60.f));
-        ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraTop)), ImVec2(oldFrameCameraTop.cols, oldFrameCameraTop.rows));
-    }
+    //     isFrameCameraFront = false;
+    // }
+    // else
+    // {
+    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, oldFrameCameraFront.cols, oldFrameCameraFront.rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, oldFrameCameraFront.data);
+    //     ImGui::SetCursorPos(ImVec2(-60.f, -60.f));
+    //     ImGui::Image(reinterpret_cast<void *>(static_cast<intptr_t>(textureCameraFront)), ImVec2(oldFrameCameraFront.cols, oldFrameCameraFront.rows));
+    // }
 
     float windowSizeX = ImGui::GetWindowSize().x;
     float windowSizeY = ImGui::GetWindowSize().y;
@@ -1190,7 +1245,7 @@ int gui()
 void loadLidar(NodeHandle nh)
 {
 
-    ros::Subscriber laserSub = nh.subscribe("/cjt/scan", 1, laserCallback);
+    // ros::Subscriber laserSub = nh.subscribe("/cjt/scan", 1, laserCallback);
 
     while (ros::ok())
     {
@@ -1204,16 +1259,38 @@ void loadLidar(NodeHandle nh)
     }
 }
 
-void loadCamera(NodeHandle nh, image_transport::ImageTransport it) {
+void loadCameraFront(NodeHandle nh, image_transport::ImageTransport it) {
 
     std::string tempVar;
     std::string path;
 
-    nh.getParam("rostopic_name_cameraTop", tempVar);
+    nh.getParam("rostopic_name_cameraFront", tempVar);
     path = nh.getNamespace() + tempVar;
 
-    image_transport::Subscriber imsub = it.subscribe(path.c_str(), 1, getTopCamera, image_transport::TransportHints("compressed"));
-    //imsub = it.subscribe(path.c_str(), 1, missing, image_transport::TransportHints("compressed"));
+    image_transport::Subscriber imsub = it.subscribe(path.c_str(), 1, getFrontCamera, image_transport::TransportHints("compressed"));
+
+    while (ros::ok())
+    {
+
+        ros::spinOnce();
+
+        if (shutdownBool)
+        {
+            ros::shutdown();
+        }
+    }
+
+}
+
+void loadCameraBack(NodeHandle nh, image_transport::ImageTransport it) {
+
+    std::string tempVar;
+    std::string path;
+
+    nh.getParam("rostopic_name_cameraBack", tempVar);
+    path = nh.getNamespace() + tempVar;
+
+    image_transport::Subscriber imsub = it.subscribe(path.c_str(), 1, getBackCamera, image_transport::TransportHints("compressed"));
 
     while (ros::ok())
     {
@@ -1273,7 +1350,8 @@ void threadLoader(NodeHandle nh, image_transport::ImageTransport it)
 {
 
     std::thread rpmSubscriberThread(loadSubscriberRpm, nh);
-    std::thread cameraSubscriberThread(loadCamera, nh, it);
+    std::thread cameraFront(loadCameraFront, nh, it);
+    std::thread cameraBack(loadCameraBack, nh, it);
     std::thread lidarThread(loadLidar, nh);
     std::thread percentage(getUserPercentage, nh);
     std::thread pingen(getPing);
@@ -1282,7 +1360,8 @@ void threadLoader(NodeHandle nh, image_transport::ImageTransport it)
     std::thread setGui(gui);
 
     rpmSubscriberThread.join();
-    cameraSubscriberThread.join();
+    cameraFront.join();
+    cameraBack.join();
     lidarThread.join();
     percentage.join();
     pingen.join();
